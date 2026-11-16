@@ -5,8 +5,8 @@
   "description": "Partage de dépenses entre amis, en 3 couches (séance 4 : switch de database)",
   "scripts": {
     "postinstall": "prisma generate",
-    "dev": "tsx watch src/main.ts",
-    "start": "tsx src/main.ts",
+    "dev": "tsx watch --env-file-if-exists=.env src/main.ts",
+    "start": "tsx --env-file-if-exists=.env src/main.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
