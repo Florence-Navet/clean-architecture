@@ -1,0 +1,73 @@
+### Variables
+@base = http://localhost:3000
+@admin = admin123
+
+### Liste des concerts
+GET {{base}}/concerts
+
+### Concerts à Lyon encore en vente
+GET {{base}}/concerts?city=lyon&available=true
+
+### Détail d'un concert
+GET {{base}}/concerts/1
+
+### Réserver 2 places en fosse
+POST {{base}}/concerts/1/bookings
+Content-Type: application/json
+
+{ "email": "chloe@mail.fr", "tickets": [{ "category": "FOSSE", "quantity": 2 }] }
+
+### Réserver avec le tarif étudiant et un code promo
+POST {{base}}/concerts/3/bookings
+Content-Type: application/json
+
+{ "email": "dan@mail.fr", "tickets": [{ "category": "GRADIN", "quantity": 3 }], "student": true, "promoCode": "FAN10" }
+
+### Réserver dans deux catégories
+POST {{base}}/concerts/2/bookings
+Content-Type: application/json
+
+{ "email": "eve@mail.fr", "tickets": [{ "category": "GRADIN", "quantity": 2 }, { "category": "VIP", "quantity": 1 }] }
+
+### Consulter sa réservation
+GET {{base}}/bookings/1?email=alice@mail.fr
+
+### Changer de catégorie
+POST {{base}}/bookings/1/change-category
+Content-Type: application/json
+
+{ "email": "alice@mail.fr", "category": "GRADIN" }
+
+### Annuler sa réservation
+POST {{base}}/bookings/2/cancel
+Content-Type: application/json
+
+{ "email": "bob@mail.fr" }
+
+### Créer un concert (organisateur)
+POST {{base}}/concerts
+Content-Type: application/json
+x-admin-key: {{admin}}
+
+{
+  "artist": "Les Petites Heures",
+  "venue": "L'Aéronef",
+  "city": "Lille",
+  "date": "2027-06-12T19:00:00.000Z",
+  "categories": [
+    { "code": "FOSSE", "label": "Fosse", "price": 28, "quota": 300 },
+    { "code": "VIP", "label": "Carré VIP", "price": 90, "quota": 20 }
+  ]
+}
+
+### Statistiques d'un concert (organisateur)
+GET {{base}}/concerts/2/stats
+x-admin-key: {{admin}}
+
+### Annuler un concert (organisateur)
+POST {{base}}/concerts/3/cancel
+x-admin-key: {{admin}}
+
+### Remettre les données de démo
+POST {{base}}/admin/reset
+x-admin-key: {{admin}}
