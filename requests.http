@@ -1,6 +1,7 @@
 # Requêtes pour tester l'API à la main (lancer d'abord : npm run dev)
 # Dans VS Code, avec l'extension REST Client : cliquer sur « Send Request » au-dessus de chaque requête.
-# Le serveur garde les données en mémoire : relancer npm run dev pour repartir de zéro.
+# Avec STORAGE=memory, relancer npm run dev pour repartir de zéro.
+# Avec STORAGE=postgres, les données restent en base : docker compose down -v pour repartir de zéro.
 
 @baseUrl = http://localhost:3000
 
