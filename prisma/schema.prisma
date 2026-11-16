@@ -1,0 +1,34 @@
+// Le schéma de la base PostgreSQL du Tricount.
+// Il vit dans la Couche Infrastructure : le Domaine n'en sait rien.
+// Après une modification : npm run db:push (met à jour la base et régénère le client Prisma).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model GroupRecord {
+  id       String          @id
+  name     String
+  members  String[]
+  expenses ExpenseRecord[]
+
+  @@map("groups")
+}
+
+model ExpenseRecord {
+  id           Int         @id @default(autoincrement())
+  groupId      String      @map("group_id")
+  group        GroupRecord @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  label        String
+  amountCents  Int         @map("amount_cents")
+  paidBy       String      @map("paid_by")
+  // L'ordre compte : le centime en trop va au premier participant.
+  participants String[]
+
+  @@map("expenses")
+}

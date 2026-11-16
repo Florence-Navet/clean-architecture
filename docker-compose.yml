@@ -1,0 +1,22 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: tricount-db
+    environment:
+      POSTGRES_USER: tricount
+      POSTGRES_PASSWORD: tricount
+      POSTGRES_DB: tricount
+    ports:
+      # 5434 côté machine pour ne pas entrer en conflit avec un Postgres déjà installé
+      # (ni avec la base de la marketplace de la séance 1, sur 5433)
+      - "5434:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tricount -d tricount"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
+
+volumes:
+  pgdata:
