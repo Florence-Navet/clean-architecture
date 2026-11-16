@@ -1,0 +1,29 @@
+# Dépendances et build
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+
+# Secrets et configuration locale
+.env
+.env.*
+!.env.example
+
+# Logs
+npm-debug.log*
+*.log
+
+# Éditeurs et système
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+
+# Outils IA locaux
+.claude/
+
+# Réservé au formateur : ne part jamais sur le dépôt des étudiants
+DEROULE.md
+ECARTS-CODE.md
+CORRIGE.md

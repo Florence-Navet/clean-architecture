@@ -1,0 +1,55 @@
+# Requêtes pour tester l'API à la main (lancer d'abord : npm run dev)
+# Dans VS Code, avec l'extension REST Client : cliquer sur « Send Request » au-dessus de chaque requête.
+# Au démarrage, le groupe « annecy » (Alice, Bob, Chloé) a déjà 240 € de dépenses.
+
+@baseUrl = http://localhost:3000
+
+### Alice ajoute « Courses, 60 € » → 201 (le total passe de 240 € à 300 €)
+POST {{baseUrl}}/groups/annecy/expenses
+Content-Type: application/json
+
+{
+  "label": "Courses",
+  "amountCents": 6000,
+  "paidBy": "Alice"
+}
+
+### Chloé ajoute « Essence, 40 € » → 201
+POST {{baseUrl}}/groups/annecy/expenses
+Content-Type: application/json
+
+{
+  "label": "Essence",
+  "amountCents": 4000,
+  "paidBy": "Chloé"
+}
+
+### Erreur 400 : Zoé n'est pas membre du groupe
+POST {{baseUrl}}/groups/annecy/expenses
+Content-Type: application/json
+
+{
+  "label": "Resto",
+  "amountCents": 5000,
+  "paidBy": "Zoé"
+}
+
+### Erreur 400 : groupe inconnu
+POST {{baseUrl}}/groups/inconnu/expenses
+Content-Type: application/json
+
+{
+  "label": "Resto",
+  "amountCents": 5000,
+  "paidBy": "Alice"
+}
+
+### Bonus 2 : une dépense à 0 € (le consumer du bonus plante dessus)
+POST {{baseUrl}}/groups/annecy/expenses
+Content-Type: application/json
+
+{
+  "label": "Café offert",
+  "amountCents": 0,
+  "paidBy": "Bob"
+}

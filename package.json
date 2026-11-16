@@ -1,0 +1,26 @@
+{
+  "name": "partage-depenses-evenements",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Partage de dépenses entre amis : réagir à un événement avec Kafka (séance 5)",
+  "scripts": {
+    "dev": "tsx watch src/main.ts",
+    "start": "tsx src/main.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "consumer:notification": "tsx src/consumers/notification-consumer.ts",
+    "replay": "tsx src/scripts/replay.ts"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "kafkajs": "^2.2.4"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.3",
+    "@types/node": "^22.18.0",
+    "tsx": "^4.20.6",
+    "typescript": "~5.9.3",
+    "vitest": "^5.1.0"
+  }
+}
