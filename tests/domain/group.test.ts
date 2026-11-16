@@ -1,5 +1,4 @@
 // Partie A · Couche Domaine
-// Ce test est rouge tant que src/domain/group.ts n'existe pas. À vous !
 import { Expense } from '../../src/domain/expense';
 import { Group } from '../../src/domain/group';
 
@@ -57,5 +56,47 @@ describe('Group', () => {
 
     const somme = Object.values(trio.balances()).reduce((a, b) => a + b, 0);
     expect(somme).toBe(0);
+  });
+
+  it('expose ses dépenses en lecture seule, dans l\'ordre d\'ajout', () => {
+    const annecy = new Group('annecy', 'Week-end à Annecy', AMIS);
+    const gite = new Expense('Gîte', 12000, 'Alice', AMIS);
+    const courses = new Expense('Courses', 6000, 'Bob', AMIS);
+    annecy.addExpense(gite);
+    annecy.addExpense(courses);
+
+    expect(annecy.expenses).toEqual([gite, courses]);
+  });
+
+  it('ne se laisse pas modifier par la liste de dépenses qu\'il expose', () => {
+    const annecy = new Group('annecy', 'Week-end à Annecy', AMIS);
+    const copie = annecy.expenses as Expense[];
+    copie.push(new Expense('Fantôme', 9999, 'Zoé', ['Zoé']));
+
+    expect(annecy.expenses).toEqual([]);
+  });
+});
+
+describe('Group.restore', () => {
+  it('reconstitue un groupe avec ses dépenses, et les mêmes soldes', () => {
+    const depenses = [
+      new Expense('Gîte', 12000, 'Alice', AMIS),
+      new Expense('Courses', 6000, 'Bob', AMIS),
+      new Expense('Essence', 4000, 'Chloé', ['Alice', 'Chloé']),
+    ];
+
+    const annecy = Group.restore('annecy', 'Week-end à Annecy', AMIS, depenses);
+
+    expect(annecy.id).toBe('annecy');
+    expect(annecy.name).toBe('Week-end à Annecy');
+    expect(annecy.members).toEqual(AMIS);
+    expect(annecy.expenses).toEqual(depenses);
+    expect(annecy.balances()).toEqual({ Alice: 5500, Bob: 1500, Chloé: -2500, David: -4500 });
+  });
+
+  it('refuse de reconstituer un groupe avec une dépense d\'un non-membre', () => {
+    const depenses = [new Expense('Resto', 5000, 'Zoé', ['Alice'])];
+
+    expect(() => Group.restore('annecy', 'Week-end à Annecy', AMIS, depenses)).toThrow();
   });
 });

@@ -5,13 +5,30 @@ import { DomainError } from './domain-error';
 import { Expense } from './expense';
 
 export class Group {
-  private readonly expenses: Expense[] = [];
+  private readonly expenseList: Expense[] = [];
 
   constructor(
     readonly id: string,
     readonly name: string,
     readonly members: string[],
   ) {}
+
+  // Reconstitue un groupe déjà existant, par exemple relu depuis une base de données.
+  // Chaque dépense repasse par addExpense : les règles métier restent vérifiées,
+  // même pour des données qui viennent de l'extérieur.
+  static restore(id: string, name: string, members: string[], expenses: Expense[]): Group {
+    const group = new Group(id, name, members);
+    for (const expense of expenses) {
+      group.addExpense(expense);
+    }
+    return group;
+  }
+
+  // Les dépenses, en lecture seule : un adapteur peut les lire pour les sauvegarder,
+  // mais pas les modifier sans passer par addExpense.
+  get expenses(): readonly Expense[] {
+    return [...this.expenseList];
+  }
 
   addExpense(expense: Expense): void {
     // Règle métier : seuls les membres du groupe peuvent payer ou participer.
@@ -23,7 +40,7 @@ export class Group {
         throw new DomainError(`${participant} n'est pas membre du groupe`);
       }
     }
-    this.expenses.push(expense);
+    this.expenseList.push(expense);
   }
 
   // Le solde de chaque membre, en centimes :
@@ -34,7 +51,7 @@ export class Group {
       balances[member] = 0;
     }
 
-    for (const expense of this.expenses) {
+    for (const expense of this.expenseList) {
       // Celui qui a payé avance tout le montant : on le lui doit.
       this.addToBalance(balances, expense.paidBy, expense.amountCents);
 
