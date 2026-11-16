@@ -1,0 +1,26 @@
+# Dépendances et build
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+
+# Secrets et configuration locale
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Logs
+npm-debug.log*
+*.log
+
+# Éditeurs et système
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+
+# Outils IA locaux
+.claude/

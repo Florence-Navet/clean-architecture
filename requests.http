@@ -1,0 +1,72 @@
+# Requêtes pour tester l'API à la main (lancer d'abord : npm run dev)
+# Dans VS Code, avec l'extension REST Client : cliquer sur « Send Request » au-dessus de chaque requête.
+# Le serveur garde les données en mémoire : relancer npm run dev pour repartir de zéro.
+
+@baseUrl = http://localhost:3000
+
+### Soldes au départ : tout le monde à 0
+GET {{baseUrl}}/groups/annecy/balances
+
+### Le gîte, payé par Alice pour les 4 → 201
+POST {{baseUrl}}/groups/annecy/expenses
+Content-Type: application/json
+
+{
+  "label": "Gîte",
+  "amountCents": 12000,
+  "paidBy": "Alice",
+  "participants": ["Alice", "Bob", "Chloé", "David"]
+}
+
+### Les courses, payées par Bob pour les 4 → 201
+POST {{baseUrl}}/groups/annecy/expenses
+Content-Type: application/json
+
+{
+  "label": "Courses",
+  "amountCents": 6000,
+  "paidBy": "Bob",
+  "participants": ["Alice", "Bob", "Chloé", "David"]
+}
+
+### L'essence, payée par Chloé pour Alice et elle → 201
+POST {{baseUrl}}/groups/annecy/expenses
+Content-Type: application/json
+
+{
+  "label": "Essence",
+  "amountCents": 4000,
+  "paidBy": "Chloé",
+  "participants": ["Alice", "Chloé"]
+}
+
+### Soldes attendus : Alice 5500, Bob 1500, Chloé -2500, David -4500
+GET {{baseUrl}}/groups/annecy/balances
+
+### Qui rembourse qui ? Attendu : David → Alice 4500, Chloé → Bob 1500, Chloé → Alice 1000
+GET {{baseUrl}}/groups/annecy/settlements
+
+### Erreur 404 : groupe inconnu
+GET {{baseUrl}}/groups/inconnu/balances
+
+### Erreur 400 : montant négatif (refusé par le Domaine)
+POST {{baseUrl}}/groups/annecy/expenses
+Content-Type: application/json
+
+{
+  "label": "Resto",
+  "amountCents": -500,
+  "paidBy": "Alice",
+  "participants": ["Alice"]
+}
+
+### Erreur 400 : Zoé n'est pas membre du groupe (refusé par le Domaine)
+POST {{baseUrl}}/groups/annecy/expenses
+Content-Type: application/json
+
+{
+  "label": "Resto",
+  "amountCents": 5000,
+  "paidBy": "Zoé",
+  "participants": ["Alice"]
+}
