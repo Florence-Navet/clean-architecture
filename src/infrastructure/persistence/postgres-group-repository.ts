@@ -12,3 +12,54 @@
 //
 // Les Couches Domaine et Applicative ne doivent pas changer : si vous avez envie
 // de les modifier, c'est que quelque chose fuit. Appelez le formateur.
+
+import {PrismaClient} from '@prisma/client';
+import {GroupRepository} from '../../application/group-repository';
+import {Group} from '../../domain/group';
+import {Expense} from '../../domain/expense';
+import e from "express";
+
+export class postgresGroupRepository implements GroupRepository {
+    constructor(private readonly prisma: PrismaClient) {
+    }
+
+    async findById(id: string): Promise<Group | undefined> {
+        const record = await this.prisma.groupRecord.findUnique({
+            where: {id},
+            include: {expenses: {orderBy: {id: 'asc'}}},
+        });
+        if (!record) return undefined;
+        const expenses = record.expenses.map(
+            (e) => new Expense(e.label, e.amountCents, e.paidBy, e.participants),
+        );
+        return Group.restore(record.id, record.name, record.members, expenses);
+    }
+
+    async save(group: Group): Promise<void> {
+        // Tout ou rien : si une requête échoue, aucune n'est appliquée.
+        await this.prisma.$transaction([
+            // 1. Crée le groupe s'il n'existe pas, sinon met à jour son nom et ses membres.
+            this.prisma.groupRecord.upsert({
+                where: { id: group.id },
+                create: { id: group.id, name: group.name, members: group.members },
+                update: { name: group.name, members: group.members },
+            }),
+            // 2. Efface les anciennes dépenses du groupe...
+            this.prisma.expenseRecord.deleteMany({ where: { groupId: group.id } }),
+            // 3. ...puis réécrit toutes ses dépenses actuelles, dans l'ordre.
+            this.prisma.expenseRecord.createMany({
+                data: group.expenses.map((e) => ({
+                    groupId: group.id,
+                    label: e.label,
+                    amountCents: e.amountCents,
+                    paidBy: e.paidBy,
+                    participants: e.participants,
+                })),
+            }),
+        ]);
+    }
+
+}
+
+
+

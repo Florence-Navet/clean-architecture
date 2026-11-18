@@ -8,6 +8,8 @@ import { GetSettlements } from './application/get-settlements';
 import { GroupRepository } from './application/group-repository';
 import { InMemoryGroupRepository } from './infrastructure/persistence/in-memory-group-repository';
 import { expenseRoutes } from './infrastructure/http/expense-routes';
+import {postgresGroupRepository} from "./infrastructure/persistence/postgres-group-repository";
+import {PrismaClient} from "@prisma/client";
 
 const PORT = 3000;
 
@@ -19,8 +21,10 @@ function createGroupRepository(storage: string): GroupRepository {
       return new InMemoryGroupRepository();
     case 'postgres':
       // TODO séance 4 · bloc A : brancher ici le PostgresGroupRepository
-      // (src/infrastructure/persistence/postgres-group-repository.ts).
-      throw new Error("STORAGE=postgres : l'adapteur PostgresGroupRepository n'est pas encore écrit");
+      // (src/infrastructure/persistence/postgres-group-repository.ts
+
+      // throw new Error("STORAGE=postgres : l'adapteur PostgresGroupRepository n'est pas encore écrit");
+          return new postgresGroupRepository(new PrismaClient());
     default:
       throw new Error(`STORAGE inconnu : « ${storage} » (valeurs possibles : memory, postgres)`);
   }
