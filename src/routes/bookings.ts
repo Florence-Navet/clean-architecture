@@ -2,10 +2,13 @@ import { Router } from 'express';
 import { db } from '../db';
 import { sendEmail } from '../utils/mailer';
 import { findConcert, formatPrice, isAdmin } from '../utils/helpers';
+import {computeFees} from "../domain/computeFees";
+import { studentPrice } from "../domain/studentPrice";
 
 const router = Router();
 
 const MAX_TICKETS_PER_EMAIL = 8;
+
 
 // Réserver des places
 router.post('/concerts/:id/bookings', (req, res) => {
@@ -53,12 +56,15 @@ router.post('/concerts/:id/bookings', (req, res) => {
       return res.status(409).json({ error: `Plus assez de places en ${cat.label}` });
     }
     cat.sold += t.quantity;
-    let price = cat.price;
-    if (student) {
-      if (cat.code != 'VIP') {
-        price = price * 0.8;
-      }
-    }
+    // let price = cat.price;
+    // if (student) {
+    //   if (cat.code != 'VIP') {
+    //     price = price * 0.8;
+    //   }
+
+    // }
+    const price = student ? studentPrice(cat.price, cat.code) : cat.price;
+
     subtotal += price * t.quantity;
     lines.push({ category: cat.code, quantity: t.quantity, unitPrice: price });
   }
@@ -92,9 +98,8 @@ router.post('/concerts/:id/bookings', (req, res) => {
   }
 
   // frais : 1,50 € par billet + 3 % de frais de service, plafonnés à 15 €
-  let fees = qty * 1.5 + subtotal * 0.03;
-  if (fees > 15) fees = 15;
-  fees = Math.round(fees * 100) / 100;
+  let fees = computeFees(qty, subtotal);
+
   const total = Math.round((subtotal + fees) * 100) / 100;
 
   const booking = {
@@ -174,9 +179,12 @@ router.post('/bookings/:id/change-category', (req, res) => {
     }
   }
   let subtotal = price * line.quantity;
-  let fees = line.quantity * 1.5 + subtotal * 0.03;
-  if (fees > 15) fees = 15;
-  fees = Math.round(fees * 100) / 100;
+
+  // let fees = line.quantity * 1.5 + subtotal * 0.03;
+  // if (fees > 15) fees = 15;
+  // fees = Math.round(fees * 100) / 100;
+  const fees = computeFees(line.quantity, subtotal);
+
   const total = Math.round((subtotal + fees) * 100) / 100;
   const diff = Math.round((total - booking.total) * 100) / 100;
 
