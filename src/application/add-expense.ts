@@ -3,8 +3,10 @@
 import { DomainError } from '../domain/domain-error';
 import { Expense } from '../domain/expense';
 import { GroupRepository } from './group-repository';
-import { GroupStats } from './group-stats';
-import { Notifier } from './notifier';
+import {EventPublisher} from "./events";
+
+// import { GroupStats } from './group-stats';
+// import { Notifier } from './notifier';
 
 export type AddExpenseCommand = {
   groupId: string;
@@ -16,8 +18,9 @@ export type AddExpenseCommand = {
 export class AddExpense {
   constructor(
     private readonly groups: GroupRepository,
-    private readonly notifier: Notifier,
-    private readonly stats: GroupStats,
+    // private readonly notifier: Notifier,
+    // private readonly stats: GroupStats,
+    private readonly publisher: EventPublisher,
   ) {}
 
   async execute(command: AddExpenseCommand): Promise<void> {
@@ -31,7 +34,15 @@ export class AddExpense {
     await this.groups.save(group);
 
     // Les réactions à la nouvelle dépense : chacune est appelée ici, une par une.
-    this.notifier.notify(group, expense);
-    this.stats.update(group);
+    // this.notifier.notify(group, expense);
+    // this.stats.update(group);
+    await this.publisher.publish({
+      type: 'ExpenseAdded',
+      eventId: crypto.randomUUID(),
+      groupId: group.id,
+      payerName: expense.paidBy,
+      amountInCents: expense.amountCents,
+      occurredAt: new Date().toISOString(),
+    });
   }
 }

@@ -7,7 +7,7 @@ export class InMemoryEventPublisher implements EventPublisher {
   readonly published: ExpenseAdded[] = [];
 
   async publish(event: ExpenseAdded): Promise<void> {
-    // À compléter (bloc A) : rangez l'événement dans this.published.
-    throw new Error('À compléter : bloc A');
+    this.published.push(event);
+    // throw new Error('À compléter : bloc A');
   }
 }

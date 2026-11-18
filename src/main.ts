@@ -8,6 +8,9 @@ import { ConsoleGroupStats } from './infrastructure/console/console-group-stats'
 import { ConsoleNotifier } from './infrastructure/console/console-notifier';
 import { InMemoryGroupRepository } from './infrastructure/persistence/in-memory-group-repository';
 import { expenseRoutes } from './infrastructure/http/expense-routes';
+// import {InMemoryEventPublisher} from "./infrastructure/events/in-memory-event-publisher";
+
+import {KafkaEventPublisher} from "./infrastructure/events/kafka-event-publisher";
 
 const PORT = 3000;
 
@@ -19,7 +22,10 @@ async function main(): Promise<void> {
   await groups.save(annecy);
 
   // 2. Le use case (Applicative), qui reçoit ce dont il a besoin
-  const addExpense = new AddExpense(groups, new ConsoleNotifier(), new ConsoleGroupStats());
+  // const event_publisher = new InMemoryEventPublisher();
+  const event_publisher = new KafkaEventPublisher();
+
+  const addExpense = new AddExpense(groups, event_publisher);
 
   // 3. L'app Express (Infrastructure), qui reçoit le use case
   const app = express();

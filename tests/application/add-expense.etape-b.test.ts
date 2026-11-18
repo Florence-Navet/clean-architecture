@@ -29,7 +29,7 @@ class FakeEventPublisher implements EventPublisher {
   }
 }
 
-describe.skip('AddExpense (bloc A)', () => {
+describe('AddExpense (bloc A)', () => {
   it('enregistre la dépense, puis publie un événement ExpenseAdded', async () => {
     const annecy = new Group('annecy', 'Week-end Annecy', ['Alice', 'Bob', 'Chloé']);
     const groups = new FakeGroupRepository(annecy);

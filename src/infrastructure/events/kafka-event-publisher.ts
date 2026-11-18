@@ -12,8 +12,15 @@ export class KafkaEventPublisher implements EventPublisher {
   async publish(event: ExpenseAdded): Promise<void> {
     await this.connect();
     // À compléter (bloc B) : envoyez l'événement dans le topic TOPIC avec this.producer.send(...)
+    await this.producer.send({
+      topic: TOPIC, // "expenses"
+      messages: [{ value: JSON.stringify(event) }],
+    });
     // Le message est un texte : transformez l'événement avec JSON.stringify(event).
-    throw new Error('À compléter : bloc B');
+    // throw new Error('À compléter : bloc B');
+
+
+
   }
 
   // Fourni : on se connecte à Kafka une seule fois, au premier publish.
