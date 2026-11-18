@@ -1,0 +1,84 @@
+# Requêtes pour tester l'API à la main (lancer d'abord : npm run dev)
+# Dans VS Code, avec l'extension REST Client : cliquer sur « Send Request » au-dessus de chaque requête.
+# Le serveur garde les données en mémoire : relancer npm run dev pour repartir de zéro.
+# Au démarrage, deux groupes existent : « annecy » (Alice, Bob, Chloé, David) et « new-york » (Alice, Bob).
+
+@baseUrl = http://localhost:3000
+
+########## L'API externe, appelée directement (bloc B, étape 1) ##########
+
+### Frankfurter : le taux USD → EUR du jour
+GET https://api.frankfurter.dev/v2/rate/USD/EUR
+
+### Frankfurter : une devise qui n'existe pas → 422
+GET https://api.frankfurter.dev/v2/rate/usd/xyz
+
+### L'API simulée (bloc C, lancer d'abord : npm run api-simulee) : même route, même JSON
+GET http://localhost:4000/v2/rate/USD/EUR
+
+########## Notre API ##########
+
+### Resto à New York, 30 $ payés par Alice pour Alice et Bob → 201 (27 € une fois convertis… quand la conversion sera écrite)
+POST {{baseUrl}}/groups/new-york/expenses
+Content-Type: application/json
+
+{
+  "label": "Resto",
+  "amountCents": 3000,
+  "currency": "USD",
+  "paidBy": "Alice",
+  "participants": ["Alice", "Bob"]
+}
+
+### Soldes du groupe New York : au départ Bob doit 1500 (15 €, faux) ; après le bloc A, 1350 (13,50 €) ; après le bloc B, environ 1350 (taux du jour)
+GET {{baseUrl}}/groups/new-york/balances
+
+### Taxi en euros, 40 €, payé par Bob → 201 (aucun appel à l'API de taux)
+POST {{baseUrl}}/groups/new-york/expenses
+Content-Type: application/json
+
+{
+  "label": "Taxi",
+  "amountCents": 4000,
+  "currency": "EUR",
+  "paidBy": "Bob",
+  "participants": ["Alice", "Bob"]
+}
+
+### Sans "currency" : la dépense est en euros, comme mardi → 201
+POST {{baseUrl}}/groups/annecy/expenses
+Content-Type: application/json
+
+{
+  "label": "Gîte",
+  "amountCents": 12000,
+  "paidBy": "Alice",
+  "participants": ["Alice", "Bob", "Chloé", "David"]
+}
+
+### Erreur 400 : devise inconnue (après le bloc A ; avec Frankfurter, l'API répond 422 et l'adapteur le traduit en UnknownCurrencyError)
+POST {{baseUrl}}/groups/new-york/expenses
+Content-Type: application/json
+
+{
+  "label": "Souvenirs",
+  "amountCents": 1000,
+  "currency": "XYZ",
+  "paidBy": "Alice",
+  "participants": ["Alice", "Bob"]
+}
+
+### Erreur 400 : "currency" n'est pas un texte
+POST {{baseUrl}}/groups/new-york/expenses
+Content-Type: application/json
+
+{
+  "label": "Resto",
+  "amountCents": 3000,
+  "currency": 840,
+  "paidBy": "Alice",
+  "participants": ["Alice", "Bob"]
+}
+
+### Qui rembourse qui dans le groupe New York ?
+GET {{baseUrl}}/groups/new-york/settlements
