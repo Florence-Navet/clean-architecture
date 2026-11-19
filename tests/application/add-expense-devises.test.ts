@@ -5,7 +5,8 @@ import { Group } from '../../src/domain/group';
 import { UnknownCurrencyError } from '../../src/domain/unknown-currency-error';
 import { GroupRepository } from '../../src/application/group-repository';
 import { AddExpense } from '../../src/application/add-expense';
-import { FakeExchangeRateProvider } from './fake-exchange-rate-provider';
+import {BrokenExchangeRateProvider, FakeExchangeRateProvider} from './fake-exchange-rate-provider';
+import {ExchangeRateUnavailableError} from "../../src/application/exchange-rate-unavailable-error";
 
 class FakeGroupRepository implements GroupRepository {
   saved: Group[] = [];
@@ -79,5 +80,23 @@ describe('Bloc A · AddExpense avec des devises', () => {
   //   - attendez une ExchangeRateUnavailableError (à importer depuis src/application) ;
   //   - vérifiez que rien n'est sauvegardé.
   // Puis remplacez `it.todo(` par `it(` et ajoutez la fonction de test : `async () => { … }`.
-  it.todo('ne sauvegarde rien si le fournisseur de taux échoue');
+  it('ne sauvegarde rien si le fournisseur de taux échoue', async () => {
+    const newYork = new Group('new-york', 'Week-end à New York', ['Alice', 'Bob']);
+    const groups = new FakeGroupRepository(newYork);
+    const exchangeRates = new BrokenExchangeRateProvider();
+
+    await expect(
+        new AddExpense(groups, exchangeRates).execute({
+          groupId: 'new-york',
+          label: 'Souvenirs',
+          amountCents: 1000,
+          currency: 'USD',
+          paidBy: 'Alice',
+          participants: ['Alice', 'Bob'],
+        }),
+    ).rejects.toBeInstanceOf(ExchangeRateUnavailableError);
+    expect(groups.saved).toHaveLength(0);
+  });
+
+
 });

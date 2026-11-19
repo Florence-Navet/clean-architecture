@@ -20,14 +20,20 @@ export class FakeExchangeRateProvider implements ExchangeRateProvider {
     //   1. lisez le taux de `base` dans this.rates (il vaut undefined si la devise n'y est pas) ;
     //   2. s'il vaut undefined : levez une UnknownCurrencyError ;
     //   3. sinon : renvoyez new ExchangeRate(base, quote, <le taux>).
-    throw new Error('À implémenter (bloc A)');
+    // throw new Error('À implémenter (bloc A)');
+    const rate = this.rates[base];
+    if(rate === undefined) {
+      throw new UnknownCurrencyError(base);
+    }
+    return new ExchangeRate(base, quote, rate);
   }
 }
+
 
 // Bloc A : un fournisseur de taux qui échoue toujours, comme une API en panne.
 export class BrokenExchangeRateProvider implements ExchangeRateProvider {
   async getRate(base: string, quote: string): Promise<ExchangeRate> {
     // À compléter (bloc A) : levez une ExchangeRateUnavailableError (message libre, ex. 'API en panne').
-    throw new Error('À implémenter (bloc A)');
+    throw new ExchangeRateUnavailableError('API en panne');
   }
 }

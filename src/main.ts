@@ -12,12 +12,16 @@ import { expenseRoutes } from './infrastructure/http/expense-routes';
 
 const PORT = 3000;
 // L'adresse de l'API de taux de change (bloc B). C'est le seul endroit où elle est écrite.
-const EXCHANGE_API_URL = 'https://api.frankfurter.dev/v2'; // ← partie C : remplacer par 'http://localhost:4000/v2'
+// const EXCHANGE_API_URL = 'https://api.frankfurter.dev/v2'; // ← partie C : remplacer par 'http://localhost:4000/v2'
+
+const EXCHANGE_API_URL = 'http://localhost:4000/v2';
 
 async function main(): Promise<void> {
   // 1. Les adapteurs (Infrastructure)
   const groups = new InMemoryGroupRepository();
-  const exchangeRates = new FixedExchangeRateProvider(); // ← partie B : remplacer par new FrankfurterExchangeRateProvider(EXCHANGE_API_URL)
+  // const exchangeRates = new FixedExchangeRateProvider(); // ← partie B : remplacer par new FrankfurterExchangeRateProvider(EXCHANGE_API_URL)
+
+  const exchangeRates = new FrankfurterExchangeRateProvider(EXCHANGE_API_URL);
 
   // Pas encore de route pour créer un groupe : on prépare les groupes à la main.
   await groups.save(new Group('annecy', 'Week-end à Annecy', ['Alice', 'Bob', 'Chloé', 'David']));

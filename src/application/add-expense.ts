@@ -48,6 +48,10 @@ export class AddExpense {
   //   - sinon : demander le taux à `this.exchangeRates` (de `currency` vers 'EUR'),
   //     puis renvoyer le montant converti avec la méthode `convert` du taux.
   private async toEurCents(amountCents: number, currency: string): Promise<number> {
-    return amountCents; // ← provisoire : pour l'instant, 30 $ deviennent 30 €. C'est faux !
+    if(currency === 'EUR') {
+      return amountCents;
+    }
+    const exchangeRate = await this.exchangeRates.getRate(currency, 'EUR');
+    return exchangeRate.convert(amountCents); // ← provisoire : pour l'instant, 30 $ deviennent 30 €. C'est faux !
   }
 }
